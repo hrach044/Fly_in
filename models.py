@@ -29,3 +29,16 @@ class Connection:
 
     def __repr__(self) -> str:
         return f"Connection(zone1={self.zone1!r}, zone2={self.zone2!r}, capacity={self.capacity})"
+
+class Drone:
+    def __init__(self, id: int, path: list[str], current_index: int = 0):
+        self.id = id
+        self.path = path
+        self.current_index = current_index
+        self.transit_to: str | None = None
+    
+    def is_done(self) -> bool:
+        return self.current_index == len(self.path) - 1
+
+    def current_zone(self) -> str:
+        return self.path[self.current_index]
