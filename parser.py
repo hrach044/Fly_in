@@ -1,5 +1,5 @@
 from models import Zone, ZoneType, Connection
-from graph import Graph
+from graph import Graph, link_key
 
 
 def parse_zone(line: str) -> Zone:
@@ -9,6 +9,8 @@ def parse_zone(line: str) -> Zone:
     color = "none"
     max_drones = 1
     name = cut[1]
+    if "-" in name:
+        raise ValueError(f"Zone name cannot contain a dash: {name}")
     x = int(cut[2])
     y = int(cut[3])
     cut = cut[4:]
@@ -29,6 +31,7 @@ def read_map(path: str) -> tuple[int, Graph]:
     with open(path, "r") as f:
         zones: dict[str, Zone] = {}
         connections: list[Connection] = []
+        seen_links: set[tuple[str, str]] = set()
         start: Zone | None = None
         end: Zone | None = None
         nb_drones: int = 0
@@ -40,6 +43,8 @@ def read_map(path: str) -> tuple[int, Graph]:
                 elif line.startswith("nb_drones:"):
                     cut = line.split(":")
                     nb_drones = int(cut[1].strip())
+                    if nb_drones < 1:
+                        raise ValueError("nb_drones must be a positive integer")
                 elif line.startswith("start_hub:"):
                     zone = parse_zone(line)
                     if zone.name in zones:
@@ -58,6 +63,9 @@ def read_map(path: str) -> tuple[int, Graph]:
                     end = zone
                 elif line.startswith("hub:"):
                     zone = parse_zone(line)
+                    if zone.capacity < 1:
+                        raise ValueError("max_drones must be "
+                                         "a positive integer")
                     if zone.name in zones:
                         raise ValueError(f"Duplicate zone name: {zone.name}")
                     zones[zone.name] = zone
@@ -66,12 +74,19 @@ def read_map(path: str) -> tuple[int, Graph]:
                     cut = line.split()
                     names = cut[1].split("-")
                     if names[0] not in zones or names[1] not in zones:
-                        raise ValueError(f"line {line_number}: "
-                                         f"Unknown zone in connection: {line}")
+                        raise ValueError(f"Unknown zone in connection: {line}")
+                    key = link_key(names[0], names[1])
+                    if key in seen_links:
+                        raise ValueError(f"Duplicate connection: "
+                                         f"{names[0]}-{names[1]}")
+                    seen_links.add(key)
                     if len(cut) == 3:
                         max_link_capacity = int(
                             cut[2].strip("[]").split("=")[1]
                             )
+                    if max_link_capacity < 1:
+                        raise ValueError("max_link_capacity must "
+                                         "be a positive integer")
                     connection = Connection(
                         names[0], names[1], max_link_capacity
                         )

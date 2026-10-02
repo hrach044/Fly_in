@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class ZoneType(Enum):
     NORMAL = "normal"
     BLOCKED = "blocked"
@@ -8,7 +9,8 @@ class ZoneType(Enum):
 
 
 class Zone:
-    def __init__(self, name: str, x: int, y: int, zone_type: ZoneType, color: str = "none", capacity: int = 1):
+    def __init__(self, name: str, x: int, y: int, zone_type: ZoneType,
+                 color: str = "none", capacity: int = 1):
         self.name = name
         self.x = x
         self.y = y
@@ -17,8 +19,9 @@ class Zone:
         self.capacity = capacity
 
     def __repr__(self) -> str:
-        return f"Zone(name={self.name!r}, x={self.x}, y={self.y}, zone_type={self.zone_type}, color={self.color!r}, capacity={self.capacity})"
-        
+        return (f"Zone(name={self.name!r}, x={self.x}, y={self.y}, "
+                f"zone_type={self.zone_type}, color={self.color!r}, "
+                f"capacity={self.capacity})")
 
 
 class Connection:
@@ -28,7 +31,9 @@ class Connection:
         self.capacity = capacity
 
     def __repr__(self) -> str:
-        return f"Connection(zone1={self.zone1!r}, zone2={self.zone2!r}, capacity={self.capacity})"
+        return (f"Connection(zone1={self.zone1!r}, zone2={self.zone2!r}, "
+                f"capacity={self.capacity})")
+
 
 class Drone:
     def __init__(self, id: int, path: list[str], current_index: int = 0):
@@ -36,7 +41,7 @@ class Drone:
         self.path = path
         self.current_index = current_index
         self.transit_to: str | None = None
-    
+
     def is_done(self) -> bool:
         return self.current_index == len(self.path) - 1
 

@@ -1,18 +1,25 @@
-from models import Drone
+from models import Drone, ZoneType
 from graph import Graph, link_key
 
 
-def create_drones(nb_drones: int, path: list[str]) -> list[Drone]:
+def create_drones(paths: list[list[str]]) -> list[Drone]:
     drones: list[Drone] = []
-    for i in range(nb_drones):
+    for i, path in enumerate(paths):
         drones.append(Drone(i + 1, path))
     return drones
 
 
 def count_in_zone(drones: list[Drone], zone_name: str) -> int:
     count = 0
+    occupied: str
     for drone in drones:
-        if not drone.is_done() and drone.current_zone() == zone_name:
+        if drone.is_done():
+            continue
+        if drone.transit_to is not None:
+            occupied = drone.transit_to
+        else:
+            occupied = drone.current_zone()
+        if occupied == zone_name:
             count += 1
     return count
 
@@ -24,6 +31,10 @@ def simulate(drones: list[Drone], graph: Graph) -> list[list[str]]:
         turn += 1
         turns: list[str] = []
         link_usage: dict[tuple[str, str], int] = {}
+        for drone in drones:
+            if drone.transit_to is not None:
+                key = link_key(drone.current_zone(), drone.transit_to)
+                link_usage[key] = link_usage.get(key, 0) + 1
         for drone in drones:
             if drone.is_done():
                 continue
@@ -39,9 +50,15 @@ def simulate(drones: list[Drone], graph: Graph) -> list[list[str]]:
             if ((next_zone_name == graph.end.name or
                 count_in_zone(drones, next_zone_name) < next_zone.capacity) and
                     link_has_room):
-                drone.current_index += 1
-                turns.append(f"D{drone.id}-{next_zone_name}")
+                if next_zone.zone_type == ZoneType.RESTRICTED:
+                    drone.transit_to = next_zone_name
+                    turns.append(f"D{drone.id}-{drone.current_zone()}"
+                                 f"-{next_zone_name}")
+                else:
+                    drone.current_index += 1
+                    turns.append(f"D{drone.id}-{next_zone_name}")
                 link_usage[key] = link_usage.get(key, 0) + 1
+        if not turns:
+            raise RuntimeError("Deadlock: no drone can move")
         log.append(turns)
     return log
-
