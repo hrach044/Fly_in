@@ -1,8 +1,21 @@
+"""Parse map descriptions into zones and graphs."""
+
 from models import Zone, ZoneType, Connection
 from graph import Graph, link_key
 
 
 def parse_zone(line: str) -> Zone:
+    """Parse one map line into a zone.
+
+    Args:
+        line: Text describing the zone and its metadata.
+
+    Returns:
+        The parsed zone.
+
+    Raises:
+        ValueError: If the zone name or metadata is invalid.
+    """
     cut = line.split()
     metadata: dict[str, str] = {}
     zone_type = ZoneType.NORMAL
@@ -30,6 +43,17 @@ def parse_zone(line: str) -> Zone:
 
 
 def read_map(path: str) -> tuple[int, Graph]:
+    """Read a map file and build its graph.
+
+    Args:
+        path: Path to the map file.
+
+    Returns:
+        The drone count and parsed graph.
+
+    Raises:
+        ValueError: If the map contains invalid or incomplete data.
+    """
     with open(path, "r") as f:
         zones: dict[str, Zone] = {}
         connections: list[Connection] = []

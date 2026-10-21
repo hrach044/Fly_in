@@ -1,9 +1,19 @@
+"""Find paths through a graph using zone costs."""
+
 from models import Zone, ZoneType
 from graph import Graph
 import heapq
 
 
 def zone_cost(zone: Zone) -> float | None:
+    """Return the traversal cost for a zone type.
+
+    Args:
+        zone: Zone whose type determines the cost.
+
+    Returns:
+        The cost, or None when the zone type has no cost.
+    """
     if zone.zone_type == ZoneType.PRIORITY:
         return 0.9
     elif zone.zone_type == ZoneType.NORMAL:
@@ -15,6 +25,15 @@ def zone_cost(zone: Zone) -> float | None:
 
 
 def assign_paths(graph: Graph, nb_drones: int) -> list[list[str]]:
+    """Assign a path to each drone while tracking zone load.
+
+    Args:
+        graph: Graph through which to find paths.
+        nb_drones: Number of paths to assign.
+
+    Returns:
+        The assigned paths.
+    """
     load: dict[str, int] = {}
     paths: list[list[str]] = []
     for _ in range(nb_drones):
@@ -27,6 +46,20 @@ def assign_paths(graph: Graph, nb_drones: int) -> list[list[str]]:
 
 def path_finding(graph: Graph, start_name: str, end_name: str,
                  extra: dict[str, int]) -> list[str]:
+    """Find a lowest-cost path between two zones.
+
+    Args:
+        graph: Graph to search.
+        start_name: Name of the starting zone.
+        end_name: Name of the ending zone.
+        extra: Additional cost for each zone.
+
+    Returns:
+        The ordered zone names along the path.
+
+    Raises:
+        ValueError: If the ending zone is unreachable.
+    """
     distances: dict[str, float] = {}
     for name in graph.zones.keys():
         distances[name] = float('inf')

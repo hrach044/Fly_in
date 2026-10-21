@@ -1,3 +1,5 @@
+"""Run a drone simulation from a map file."""
+
 import sys
 from parser import read_map
 from pathfinding import assign_paths
@@ -7,6 +9,7 @@ from output import print_log
 
 
 def main() -> None:
+    """Load a map, simulate its drones, and print the movement log."""
     if len(sys.argv) != 2:
         print("Usage: python3 main.py <map_file>")
         sys.exit(1)

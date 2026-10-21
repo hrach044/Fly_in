@@ -1,8 +1,18 @@
+"""Simulate drone movement through a graph."""
+
 from models import Drone, ZoneType
 from graph import Graph, link_key
 
 
 def create_drones(paths: list[list[str]]) -> list[Drone]:
+    """Create drones from the supplied paths.
+
+    Args:
+        paths: Paths assigned to the drones.
+
+    Returns:
+        The created drones.
+    """
     drones: list[Drone] = []
     for i, path in enumerate(paths):
         drones.append(Drone(i + 1, path))
@@ -10,8 +20,18 @@ def create_drones(paths: list[list[str]]) -> list[Drone]:
 
 
 def count_in_zone(drones: list[Drone], zone_name: str) -> int:
+    """Count unfinished drones occupying a zone.
+
+    Count a drone in transit as occupying its restricted destination zone.
+
+    Args:
+        drones: Drones to inspect.
+        zone_name: Name of the zone to count.
+
+    Returns:
+        The number of matching drones.
+    """
     count = 0
-    occupied: str
     for drone in drones:
         if drone.is_done():
             continue
@@ -26,6 +46,16 @@ def count_in_zone(drones: list[Drone], zone_name: str) -> int:
 
 def leaving_to_end(drones: list[Drone], zone_name: str,
                    graph: Graph) -> int:
+    """Count drones leaving a zone for the end.
+
+    Args:
+        drones: Drones to inspect.
+        zone_name: Name of the zone to inspect.
+        graph: Graph containing the end zone and link capacities.
+
+    Returns:
+        The count limited by the link capacity to the end.
+    """
     count = 0
     for drone in drones:
         if drone.is_done() or drone.transit_to is not None:
@@ -40,10 +70,20 @@ def leaving_to_end(drones: list[Drone], zone_name: str,
 
 
 def simulate(drones: list[Drone], graph: Graph) -> list[list[str]]:
-    turn = 0
+    """Simulate drones moving through the graph.
+
+    Args:
+        drones: Drones to move.
+        graph: Graph containing zones and link capacities.
+
+    Returns:
+        The per-turn log of drone movements.
+
+    Raises:
+        RuntimeError: If no drone can move before all drones are done.
+    """
     log: list[list[str]] = []
     while not all(drone.is_done() for drone in drones):
-        turn += 1
         turns: list[str] = []
         link_usage: dict[tuple[str, str], int] = {}
         for drone in drones:
