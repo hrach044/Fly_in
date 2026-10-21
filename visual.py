@@ -1,5 +1,6 @@
 from graph import Graph
 
+
 COLORS: dict[str, str] = {
     "black": "90",
     "red": "31",
@@ -31,6 +32,7 @@ def rainbow(text: str) -> str:
         result += f"\033[{code}m{char}\033[0m"
     return result
 
+
 def colorize(text: str, color: str) -> str:
     if color == "rainbow":
         return rainbow(text)
@@ -47,12 +49,19 @@ def color_move(move: str, graph: Graph) -> str:
         result.append(colorize(name, graph.zones[name].color))
     return "-".join(result)
 
-def print_colored_log(log: list[list[str]], graph: Graph) -> None:
-    for turn in log:
+
+def print_colored_log(log: list[list[str]], graph: Graph,
+                      nb_drones: int) -> None:
+    states = replay(log, nb_drones, graph.start.name)
+    for number, turn in enumerate(log, 1):
         moves: list[str] = []
         for move in turn:
             moves.append(color_move(move, graph))
+        print(f"Turn {number}")
         print(" ".join(moves))
+        print(zone_state(states[number - 1], graph))
+        print()
+
 
 def replay(log: list[list[str]], nb_drones: int,
            start_name: str) -> list[dict[int, str]]:
@@ -67,3 +76,20 @@ def replay(log: list[list[str]], nb_drones: int,
             positions[drone_id] = "-".join(parts[1:])
         states.append(dict(positions))
     return states
+
+
+def zone_state(positions: dict[int, str], graph: Graph) -> str:
+    counts: dict[str, int] = {}
+    for place in positions.values():
+        if "-" in place:
+            continue
+        counts[place] = counts.get(place, 0) + 1
+    parts: list[str] = []
+    for name, count in counts.items():
+        zone = graph.zones[name]
+        if name in (graph.start.name, graph.end.name):
+            text = f"{name}: {count}"
+        else:
+            text = f"{name}: {count}/{zone.capacity}"
+        parts.append(colorize(text, zone.color))
+    return "  ".join(parts)

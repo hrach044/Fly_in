@@ -3,8 +3,10 @@ from graph import Graph
 import heapq
 
 
-def zone_cost(zone: Zone) -> int | None:
-    if zone.zone_type in (ZoneType.NORMAL, ZoneType.PRIORITY):
+def zone_cost(zone: Zone) -> float | None:
+    if zone.zone_type == ZoneType.PRIORITY:
+        return 0.9
+    elif zone.zone_type == ZoneType.NORMAL:
         return 1
     elif zone.zone_type == ZoneType.RESTRICTED:
         return 2

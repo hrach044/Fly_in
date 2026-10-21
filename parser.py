@@ -23,6 +23,8 @@ def parse_zone(line: str) -> Zone:
             zone_type = ZoneType(value)
         elif key == "max_drones":
             max_drones = int(value)
+        else:
+            raise ValueError(f"Unknown metadata key: {key}")
     zone = Zone(name, x, y, zone_type, color, max_drones)
     return zone
 
@@ -40,11 +42,14 @@ def read_map(path: str) -> tuple[int, Graph]:
                 line = line.strip()
                 if not line or line.startswith("#"):
                     continue
-                elif line.startswith("nb_drones:"):
+                if nb_drones == 0 and not line.startswith("nb_drones:"):
+                    raise ValueError("First line must be nb_drones")
+                if line.startswith("nb_drones:"):
                     cut = line.split(":")
                     nb_drones = int(cut[1].strip())
                     if nb_drones < 1:
-                        raise ValueError("nb_drones must be a positive integer")
+                        raise ValueError("nb_drones must be a "
+                                         "positive integer")
                 elif line.startswith("start_hub:"):
                     zone = parse_zone(line)
                     if zone.name in zones:
@@ -73,6 +78,14 @@ def read_map(path: str) -> tuple[int, Graph]:
                     max_link_capacity = 1
                     cut = line.split()
                     names = cut[1].split("-")
+                    if len(cut) > 3:
+                        raise ValueError(
+                            f"Too many items in connection: {line}"
+                            )
+                    if len(names) != 2:
+                        raise ValueError(
+                            f"Connection needs exactly two zones: {line}"
+                            )
                     if names[0] not in zones or names[1] not in zones:
                         raise ValueError(f"Unknown zone in connection: {line}")
                     key = link_key(names[0], names[1])
@@ -81,9 +94,12 @@ def read_map(path: str) -> tuple[int, Graph]:
                                          f"{names[0]}-{names[1]}")
                     seen_links.add(key)
                     if len(cut) == 3:
-                        max_link_capacity = int(
-                            cut[2].strip("[]").split("=")[1]
-                            )
+                        meta_key, value = cut[2].strip("[]").split("=")
+                        if meta_key != "max_link_capacity":
+                            raise ValueError(
+                                f"Unknown metadata key: {meta_key}"
+                                )
+                        max_link_capacity = int(value)
                     if max_link_capacity < 1:
                         raise ValueError("max_link_capacity must "
                                          "be a positive integer")

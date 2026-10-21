@@ -22,7 +22,7 @@ def main() -> None:
         print(f"Error: {e}")
         sys.exit(1)
     if sys.stdout.isatty():
-        print_colored_log(log, graph)
+        print_colored_log(log, graph, nb_drones)
     else:
         print_log(log)
 
