@@ -69,6 +69,8 @@ def read_map(path: str) -> tuple[int, Graph]:
                 if nb_drones == 0 and not line.startswith("nb_drones:"):
                     raise ValueError("First line must be nb_drones")
                 if line.startswith("nb_drones:"):
+                    if nb_drones != 0:
+                        raise ValueError("Second nb_drones found")
                     cut = line.split(":")
                     nb_drones = int(cut[1].strip())
                     if nb_drones < 1:
@@ -131,6 +133,8 @@ def read_map(path: str) -> tuple[int, Graph]:
                         names[0], names[1], max_link_capacity
                         )
                     connections.append(connection)
+                else:
+                    raise ValueError(f"Unknown line type: {line}")
             except (ValueError, IndexError) as e:
                 raise ValueError(f"line {line_number}: {e}")
         if start is None or end is None:
